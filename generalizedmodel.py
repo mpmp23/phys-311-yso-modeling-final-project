@@ -216,7 +216,7 @@ sumHalo312 = 0
 #***DISK PARAMETERS!***
 
 #Define the power law, scaling for the disk emission, and number of radial steps from .07 AU to 200. AU, with step size .05 AU
-tpow312=-0.75	#defines the power law for the disk temperature profile
+tpow312=-0.5	#defines the power law for the disk temperature profile
 Dscale312=0.1   #scales the strength of the disk emission relative to the star
 Rstepsize312=0.05   #the width of each annulus in AU
 # Rsub312=0.5    #the sublimation radius
