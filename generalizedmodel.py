@@ -335,10 +335,10 @@ debrisDisk_F= Cdebris*debrisDisk_F #Scale the fluxes to match model SED fluxes a
 
 ####### YSO WITH IR EXCESS - HD31293 ########
 
-#IR excess makes me want to model this to 0.5 microns - .21
-print(ysowithIRX_L[4]) #<- gave me 2 microns! as good as we're going to get..
-print(ysowithIRX_L[7]) #3.8 microns
-print(wavePlot312[7]) #<- .41 microns! perfect.
+#IR excess makes me want to model this to 0.5 microns
+print(ysowithIRX_L[4]) #<- gave me .58 microns! as good as we're going to get..
+print(ysowithIRX_L[7]) #2  microns
+print(wavePlot312[7]) #<- .7 microns
 
 Cirx = Ftotal312[7]/ysowithIRX_F[4] # 1 microns
 # 4 2 -.44
@@ -374,23 +374,50 @@ LIR_Lstar_312 = luminosity_ratio(wavePlot312, Fstar312, Fdisk312, Fhalo312)
 print("HD 169142 LIR/Lstar:", LIR_Lstar_169)
 print("HD 32297 LIR/Lstar:", LIR_Lstar_322)
 print("HD 31293 LIR/Lstar:", LIR_Lstar_312)
+#****************************** DUST MASS ESTIMATES FOR ALL THREE OBJECTS ********************************************
 
-#dust mass estimate:
-sigma = 5.67e-8  # W m^-2 K^-4
+sigma = 5.67e-8  # Stefan-Boltzmann constant, W m^-2 K^-4
+Lsun = 3.828e26  # solar luminosity, W
+Mearth = 5.97e24 # Earth mass, kg
 
 def dust_mass_from_LIR(LIR_Lstar, Lstar_W, Tdust_K, grain_radius_m=1e-6, grain_density=3000):
+    """
+    Estimate dust mass from IR luminosity assuming blackbody-like grains.
+
+    LIR_Lstar: infrared-to-stellar luminosity ratio
+    Lstar_W: stellar luminosity in watts
+    Tdust_K: characteristic dust temperature in Kelvin
+    grain_radius_m: dust grain radius in meters
+    grain_density: grain density in kg/m^3
+    """
     Ldust = LIR_Lstar * Lstar_W
     A_emit = Ldust / (sigma * Tdust_K**4)
     Mdust = A_emit * grain_radius_m * grain_density / 3
     return Mdust, A_emit
 
-# Example for HD 32297
-Lsun = 3.828e26
 
-# You need to estimate/assume Lstar for HD 32297.
-# If you do not know it, use your stellar model or an approximate spectral type luminosity.
-Lstar_322 = 5 * Lsun      # placeholder example
+#****************************** ASSUMED STELLAR/DUST PARAMETERS ********************************************
+# These are rough placeholders. Adjust if there are better stellar luminosities or dust temperatures in future iterations!
+
+Lstar_169 = 10 * Lsun     # HD 169142 is a YSO, likely more luminous than the Sun
+Tdust_169 = 100           # K, rough characteristic disk dust temperature
+
+Lstar_322 = 5 * Lsun      # HD 32297 placeholder example
 Tdust_322 = 50            # K, rough if peak is around 60 microns
+
+Lstar_312 = 20 * Lsun     # HD 31293 placeholder; strong IR excess object
+Tdust_312 = 150           # K, rough warmer dust/halo estimate
+
+
+#****************************** MASS CALCULATIONS ********************************************
+
+Mdust_169, Aemit_169 = dust_mass_from_LIR(
+    LIR_Lstar_169,
+    Lstar_169,
+    Tdust_169,
+    grain_radius_m=1e-6,
+    grain_density=3000
+)
 
 Mdust_322, Aemit_322 = dust_mass_from_LIR(
     LIR_Lstar_322,
@@ -400,10 +427,35 @@ Mdust_322, Aemit_322 = dust_mass_from_LIR(
     grain_density=3000
 )
 
+Mdust_312, Aemit_312 = dust_mass_from_LIR(
+    LIR_Lstar_312,
+    Lstar_312,
+    Tdust_312,
+    grain_radius_m=1e-6,
+    grain_density=3000
+)
+
+
+#****************************** PRINT RESULTS ********************************************
+
+print("HD 169142 emitting area:", Aemit_169, "m^2")
+print("HD 169142 dust mass:", Mdust_169, "kg")
+print("HD 169142 dust mass in Earth masses:", Mdust_169 / Mearth)
+
+print()
+
 print("HD 32297 emitting area:", Aemit_322, "m^2")
 print("HD 32297 dust mass:", Mdust_322, "kg")
-print("HD 32297 dust mass in Earth masses:", Mdust_322 / 5.97e24)
+print("HD 32297 dust mass in Earth masses:", Mdust_322 / Mearth)
 
+print()
+
+print("HD 31293 emitting area:", Aemit_312, "m^2")
+print("HD 31293 dust mass:", Mdust_312, "kg")
+print("HD 31293 dust mass in Earth masses:", Mdust_312 / Mearth)
+
+
+# -----------------back to scaling contributions now!--------------------------------------
 ## using our D/H/W scale values to come up with percentages of contribution!
 print("HD 169142 disk contribution percent compared to Fstar: ", Dscale169*100,"%")
 print("HD 169142 dust wall contribution percent compared to Fstar: ", wallScale169*100,"%")
